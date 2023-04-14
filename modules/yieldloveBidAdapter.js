@@ -42,8 +42,6 @@ export const spec = {
         }
     })
 
-    const schains = anyValidBidRequest.schain ? [{bidders: ["*"], schain:anyValidBidRequest.schain}] : []
-
     const s2sRequest = {
       device: {
         ua: window.navigator.userAgent,
@@ -67,7 +65,6 @@ export const spec = {
           storedrequest: {
             id: anyValidBidRequest.params.rid
           },
-          schains
         }
       },
       user: {
