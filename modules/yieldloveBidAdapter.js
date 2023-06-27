@@ -24,22 +24,22 @@ export const spec = {
 
     const impressions = validBidRequests.map(bidRequest => {
       return {
-          ext: {
-            prebid: {
-                storedrequest: {
-                    id: bidRequest.params.pid?.toString()
-                }
+        ext: {
+          prebid: {
+            storedrequest: {
+              id: bidRequest.params.pid?.toString()
             }
-          },
-          banner:  {
-            format: bidRequest.sizes.map(sizeArr => ({
-              w: sizeArr[0],
-              h: sizeArr[1],
-            }))
-          },
-          secure: 1,
-          id: bidRequest.bidId
-        }
+          }
+        },
+        banner: {
+          format: bidRequest.sizes.map(sizeArr => ({
+            w: sizeArr[0],
+            h: sizeArr[1],
+          }))
+        },
+        secure: 1,
+        id: bidRequest.bidId
+      }
     })
 
     const s2sRequest = {
@@ -76,7 +76,7 @@ export const spec = {
       imp: impressions,
       regs: {
         ext: {
-            gdpr: 1
+          gdpr: 1
         }
       }
     }
@@ -87,7 +87,7 @@ export const spec = {
       data: s2sRequest,
       options: {
         contentType: 'text/plain',
-        withCredentials: true 
+        withCredentials: true
       },
     };
   },
@@ -95,8 +95,8 @@ export const spec = {
   interpretResponse: function (serverResponse) {
     const bidResponses = []
     const seatBids = serverResponse.body?.seatbid || []
-    seatBids.reduce((bids, cur)=>{
-      if(cur.bid && cur.bid.length > 0) bids = bids.concat(cur.bid)
+    seatBids.reduce((bids, cur) => {
+      if (cur.bid && cur.bid.length > 0) bids = bids.concat(cur.bid)
       return bids
     }, []).forEach(bid => {
       bidResponses.push({
@@ -110,13 +110,13 @@ export const spec = {
         netRevenue: true,
         currency: DEFAULT_CURRENCY
       })
-    }) 
-    
+    })
+
     const bidders = serverResponse.body?.ext.responsetimemillis || {}
     Object.keys(bidders).forEach(bidder => {
       if (!participatedBidders.includes(bidder)) participatedBidders.push(bidder)
     })
-    
+
     if (bidResponses.length === 0) {
       utils.logInfo('interpretResponse :: no bid');
     }
@@ -127,22 +127,23 @@ export const spec = {
   getUserSyncs: function (syncOptions, serverResponses, gdprConsent, uspConsent) {
     const syncs = []
 
-    let gdpr_params = ''
-    gdpr_params = `gdpr=${Number(gdprConsent.gdprApplies)}&`
-    gdpr_params += `gdpr_consent=${gdprConsent.consentString || ''}`
+    let gdprParams = ''
+    gdprParams = `gdpr=${Number(gdprConsent?.gdprApplies)}&`
+    gdprParams += `gdpr_consent=${gdprConsent?.consentString || ''}`
 
-    let bidder_params = ''
+    let bidderParams = ''
     if (participatedBidders.length > 0) {
-      bidder_params  =`bidders=${participatedBidders.join(',')}`
+      bidderParams = `bidders=${participatedBidders.join(',')}`
     }
-    
+
     syncs.push({
       type: 'iframe',
-      url: `https://cdn-a.yieldlove.com/load-cookie.html?endpoint=yieldlove&max_sync_count=100&${gdpr_params}&${bidder_params}`
+      url: `https://cdn-a.yieldlove.com/load-cookie.html?endpoint=yieldlove&max_sync_count=100&${gdprParams}&${bidderParams}`
     })
 
     return syncs
   },
 
 };
+
 registerBidder(spec);
